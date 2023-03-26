@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentimentAnalysis</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="tpsa-conception-et-implémentation-d’un-algorithme-d’analyse-de-sentiment-basé-sur-les-aspects">TPSA: Conception et implémentation d’un algorithme d’analyse de sentiment basé sur les aspects</h1>
+<p>Le terme “analyse des sentiments” est utilisé pour désigner la tâche consistant à déterminer automatiquement la polarité d’un texte, qu’il soit positif, négatif ou neutre. L’analyse de sentiment est de plus en plus considérée comme une tâche essentielle, tant d’un point de vue académique que commercial. La majorité des approches actuelles, cependant, tentent de détecter la polarité globale d’une phrase, d’un paragraphe ou d’un ensemble de mots, indépendamment des entités mentionnées (par exemple, les ordinateurs portables, les restaurants) et de leurs aspects (par exemple, la batterie, l’écran ; la nourriture, le service). Le sentiment peut être déterminé à différents niveaux : le sentiment associé aux mots ; le sentiment associé aux phrases, aux SMS, aux messages, dans les chats et aux tweets ; aux sentiments dans des revues de produits, des articles de blog et des documents entiers.</p>
+<p>Le but du TPSA est de concevoir et implementer un algorithme de classification de sentiment basé sur les aspects. Plus en detail, ce TP vise à identifier les aspects des entités cibles données et le sentiment exprimé à l’égard de chaque aspect. Des ensembles de données comprenant des commentaires de clients avec des annotations par des annotateurs humains identifiant les aspects, les entités cibles et la polarité du sentiment de chaque aspect sont fournis.</p>
+<h2 id="les-données-annotées-">Les données annotées :</h2>
+<ol>
+<li>Les phrases du jeu de données sont fournies en format <code>XML</code>.</li>
+</ol>
+<p>Le jeu de données <code>Restaurant_Train_v0.2</code> est composé de 3041 phrases en anglais tirées des critiques de restaurants [Ganu et al. (2009)]. Le jeu de données pour inclus des annotations pour les termes d’aspects apparaissant dans les phrases, les polarités des termes d’aspects et les polarités spécifiques aux catégories d’aspects. Des annotateurs humains expérimentés ont identifié les termes d’aspect des phrases et leurs polarités.</p>
+<pre class=" language-xml"><code class="prism  language-xml"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>sentence</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>813<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>text</span><span class="token punctuation">&gt;</span></span>All the appetizers and salads were fabulous, the steak was mouth watering and the pasta was delicious!!!<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>text</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectTerms</span><span class="token punctuation">&gt;</span></span>
+                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectTerm</span> <span class="token attr-name">term</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>appetizers<span class="token punctuation">"</span></span> <span class="token attr-name">polarity</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>positive<span class="token punctuation">"</span></span> <span class="token attr-name">from</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>8<span class="token punctuation">"</span></span> <span class="token attr-name">to</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>18<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
+                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectTerm</span> <span class="token attr-name">term</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>salads<span class="token punctuation">"</span></span> <span class="token attr-name">polarity</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>positive<span class="token punctuation">"</span></span> <span class="token attr-name">from</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>23<span class="token punctuation">"</span></span> <span class="token attr-name">to</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>29<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
+                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectTerm</span> <span class="token attr-name">term</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>steak<span class="token punctuation">"</span></span> <span class="token attr-name">polarity</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>positive<span class="token punctuation">"</span></span> <span class="token attr-name">from</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>49<span class="token punctuation">"</span></span> <span class="token attr-name">to</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>54<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
+                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectTerm</span> <span class="token attr-name">term</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>pasta<span class="token punctuation">"</span></span> <span class="token attr-name">polarity</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>positive<span class="token punctuation">"</span></span> <span class="token attr-name">from</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>82<span class="token punctuation">"</span></span> <span class="token attr-name">to</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>87<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>aspectTerms</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectCategories</span><span class="token punctuation">&gt;</span></span>
+                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectCategory</span> <span class="token attr-name">category</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>food<span class="token punctuation">"</span></span> <span class="token attr-name">polarity</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>positive<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>aspectCategories</span><span class="token punctuation">&gt;</span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>sentence</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<p>Les valeurs possibles pour la polarité des aspects sont : “positive”, “negative”, “conflict”, “neutral”. Les valeurs possibles des categories sont : “food”, “service”, “price”, “ambience”, “anecdotes/miscellaneous”.</p>
+<p>Note : les données sont annotées aussi par rapport à la polarité “conflictuelle”, <em>c’est-à-dire à la fois positive et négative, mais nous ne prendrons pas en compte cette polarité. On se concentrera sur la polarité positive, négative ou neutre</em>.</p>
+<p>Veuillez noter que :</p>
+<ul>
+<li>Toute citation dans un terme d’aspect (par exemple, “sales" team) a été remplacée par <code>&amp;quot</code> ; (le texte et les offsets restent les mêmes), par exemple, <code>&lt;aspectTerm term="&amp;quot;sales&amp;quot; team"…/&gt;</code>.</li>
+<li>Les phrases peuvent contenir des fautes d’orthographe.</li>
+<li>Pour chaque terme d’aspect des données d’entrainement, nous incluons deux attributs (“de” et “à”) qui indiquent son décalage de début et de fin dans le texte (par exemple, <code>&lt;aspectTerm term="staff" polarity="negative" from="8" to="13"/&gt;</code>).</li>
+</ul>
+<h2 id="première-tâche--analyse-des-sentiments-du-jeu-de-données-sur-les-restaurants-et-les-ordinateurs.">Première tâche : analyse des sentiments du jeu de données sur les restaurants et les ordinateurs.</h2>
+<p>On commence par télécharger les fichiers suivants qui se trouvent dans le repertoire TPSA/datasets sur Moodle :</p>
+<ul>
+<li>Restaurants_Train.xml</li>
+<li>Restaurants_Test_Gold.xml</li>
+<li>Restaurants_Test_NoLabels.xml</li>
+</ul>
+<h3 id="objectif-1-calculer-la-polarité-des-mots-dans-les-deux-jeux-de-données-à-l’aide-d’un-lexicon-de-sentiment.">Objectif 1: calculer la polarité des mots dans les deux jeux de données à l’aide d’un lexicon de sentiment.</h3>
+<p>Avant d’utiliser le lexicon pour calculer la polarité des mots contenus dans les phrases dans les deux jeux de données, il est nécessaire de faire un <strong>prétraitement des phases</strong> (negation, tokenizer, PoS tagger, et NER).</p>
+<p>Vous devez implémenter un système d’extraction d’informations simple. Le texte brut de chaque phrase est subdivisée en mots à l’aide d’un <strong>tokenizer</strong>. Ensuite, chaque phrase est étiquetée avec des balises de partie de discours (<strong>PoS tagger</strong>), ce qui s’avérera très utile à l’étape suivante, la détection d’entités nommées (<strong>NER</strong>).</p>
+<blockquote>
+<p>Pensez à stocker toutes les informations extraites, elles vous seront utiles par la suite !</p>
+</blockquote>
+<p>Vous pouvez choisir d’utiliser le tokenizer, PoS tagger, et NER de :</p>
+<ul>
+<li>NLTK
+<ul>
+<li><a href="https://www.nltk.org/book/ch03.html#chap-words">https://www.nltk.org/book/ch03.html#chap-words</a></li>
+<li><a href="https://www.nltk.org/book/ch05.html#chap-tag">https://www.nltk.org/book/ch05.html#chap-tag</a></li>
+<li><a href="https://www.nltk.org/book/ch07.html">https://www.nltk.org/book/ch07.html</a></li>
+</ul>
+</li>
+<li>SPACy
+<ul>
+<li><a href="https://spacy.io/api">https://spacy.io/api</a></li>
+</ul>
+</li>
+</ul>
+<p>Une fois que le pré-traitement des phrases est terminé, vous pouvez télécharger le lexicon SentiWordNet (<a href="https://github.com/aesuli/SentiWordNet">https://github.com/aesuli/SentiWordNet</a>) ou le lexicon RC Word-Emotion Association Lexicon (EmoLex) (<a href="https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm">https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm</a>).</p>
+<p>Voici un extrait du code dont vous aurez besoin pour extraire les valeurs de sentiment des mots individuels. Dans ce code, il est fait référence aux TAG PoS NLTK de chaque mot de la phrase.</p>
+<pre class=" language-python"><code class="prism  language-python"><span class="token keyword">def</span>  <span class="token function">penn_to_wn</span><span class="token punctuation">(</span>tag<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	<span class="token triple-quoted-string string">"""Convertion des tags en simple WORDNET TAGS"""</span>
+	<span class="token keyword">if</span>  tag<span class="token punctuation">.</span>startswith<span class="token punctuation">(</span><span class="token string">'J'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token keyword">return</span> wn<span class="token punctuation">.</span>ADJ
+	<span class="token keyword">elif</span>  tag<span class="token punctuation">.</span>startswith<span class="token punctuation">(</span><span class="token string">'N'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token keyword">return</span> wn<span class="token punctuation">.</span>NOUN
+	<span class="token keyword">elif</span>  tag<span class="token punctuation">.</span>startswith<span class="token punctuation">(</span><span class="token string">'R'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token keyword">return</span> wn<span class="token punctuation">.</span>ADV
+	<span class="token keyword">elif</span>  tag<span class="token punctuation">.</span>startswith<span class="token punctuation">(</span><span class="token string">'V'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token keyword">return</span> wn<span class="token punctuation">.</span>VERB
+	<span class="token keyword">return</span>  <span class="token boolean">None</span>
+lemmatizer  <span class="token operator">=</span>  WordNetLemmatizer<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span>  <span class="token function">get_sentiment</span><span class="token punctuation">(</span>word<span class="token punctuation">,</span>tag<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	<span class="token triple-quoted-string string">"""
+	Return une liste de score positif negatif ou neutre et return une liste vide si le mot ne renvoie rien depuis senti wordnet.
+	"""</span>
+	wn_tag  <span class="token operator">=</span>  penn_to_wn<span class="token punctuation">(</span>tag<span class="token punctuation">)</span>
+	<span class="token keyword">if</span>  wn_tag  <span class="token operator">not</span>  <span class="token keyword">in</span>  <span class="token punctuation">(</span>wn<span class="token punctuation">.</span>NOUN<span class="token punctuation">,</span> wn<span class="token punctuation">.</span>ADJ<span class="token punctuation">,</span> wn<span class="token punctuation">.</span>ADV<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token keyword">return</span>  <span class="token punctuation">[</span><span class="token punctuation">]</span>
+		
+	lemma  <span class="token operator">=</span>  lemmatizer<span class="token punctuation">.</span>lemmatize<span class="token punctuation">(</span>word<span class="token punctuation">,</span>  pos<span class="token operator">=</span>wn_tag<span class="token punctuation">)</span>
+	<span class="token keyword">if</span>  <span class="token operator">not</span>  lemma<span class="token punctuation">:</span>
+		<span class="token keyword">return</span>  <span class="token punctuation">[</span><span class="token punctuation">]</span>
+	
+	synsets  <span class="token operator">=</span> wn<span class="token punctuation">.</span>synsets<span class="token punctuation">(</span>word<span class="token punctuation">,</span>  pos<span class="token operator">=</span>wn_tag<span class="token punctuation">)</span>
+	<span class="token keyword">if</span>  <span class="token operator">not</span>  synsets<span class="token punctuation">:</span>
+		<span class="token keyword">return</span>  <span class="token punctuation">[</span><span class="token punctuation">]</span>
+	<span class="token comment"># Prend le premier sens du mot c'est à dire le sens le plus commun</span>
+	synset  <span class="token operator">=</span>  synsets<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+	swn_synset  <span class="token operator">=</span> swn<span class="token punctuation">.</span>senti_synset<span class="token punctuation">(</span>synset<span class="token punctuation">.</span>name<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+	<span class="token keyword">return</span>  <span class="token punctuation">[</span>swn_synset<span class="token punctuation">.</span>pos_score<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>swn_synset<span class="token punctuation">.</span>neg_score<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>swn_synset<span class="token punctuation">.</span>obj_score<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+</code></pre>
+<p>Apres le téléchargement, vous devez identifier la polarité associé a chaque mot dans les phrases contenues dans les jeux de données (fichiers Train et Test, 4 fichiers à traiter) en utilisant le lexicon SentiWordNet ou EmoLex:</p>
+<ul>
+<li>pour chaque mot (que vous avez identifié avec le tokenizer, stop words exclues) vous cherchez si le mot est present dans le lexicon.
+<ul>
+<li>S’il est present, alors vous assignez à ce mot la polarité positive/negative associée au mot dans le lexicon ansi que le degré associé. A vous de choisir le format (balises) pour stocker ces informations, qui vous seront utiles après.</li>
+<li>S’il n’est pas present, vous pouvez passer au mot suivant.</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>Enfin, vous pouvez générer une visualisation des données à travers des graphiques pour montrer combien de mots ont une polarité positive / negative dans chaque fichier.</p>
+</blockquote>
+<h3 id="objectif-2--determiner-la-polarité-des-termes-des-aspects">Objectif 2 : Determiner la polarité des termes des aspects</h3>
+<p>En partant des jeux de données annotées avec les termes des aspects et leur polarité, il faut concevoir un algorithme capable de déterminer automatiquement si la polarité de chaque terme d’aspect est positive, négative ou neutre.</p>
+<p>Exemple :</p>
+<ul>
+<li>“I loved their fajitas” → {fajitas: positive}</li>
+<li>“I hated their fajitas, but their salads were great” → {fajitas: negative, salads: positive}</li>
+<li>“The fajitas are their first plate” → {fajitas: neutral}</li>
+</ul>
+<p>Le fichier <code>Restaurants_Train.xml</code> sont a utiliser pour la phase d’entrainement. Vous avez que les aspects sont déjà identifiés dans les fichiers d’entrainement.<br>
+Par exemple :</p>
+<pre class=" language-xml"><code class="prism  language-xml"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>text</span><span class="token punctuation">&gt;</span></span>All the appetizers and salads were fabulous, the steak was mouth watering and the pasta was delicious!!!<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>text</span><span class="token punctuation">&gt;</span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectTerms</span><span class="token punctuation">&gt;</span></span>
+	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectTerm</span> <span class="token attr-name">term</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>appetizers<span class="token punctuation">"</span></span> <span class="token attr-name">polarity</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span><span class="token punctuation">"</span></span> <span class="token attr-name">from</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>8<span class="token punctuation">"</span></span> <span class="token attr-name">to</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>18<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
+	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectTerm</span> <span class="token attr-name">term</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>salads<span class="token punctuation">"</span></span> <span class="token attr-name">polarity</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span><span class="token punctuation">"</span></span> <span class="token attr-name">from</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>23<span class="token punctuation">"</span></span> <span class="token attr-name">to</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>29<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
+	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectTerm</span> <span class="token attr-name">term</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>steak<span class="token punctuation">"</span></span> <span class="token attr-name">polarity</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span><span class="token punctuation">"</span></span> <span class="token attr-name">from</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>49<span class="token punctuation">"</span></span> <span class="token attr-name">to</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>54<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
+	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectTerm</span> <span class="token attr-name">term</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>pasta<span class="token punctuation">"</span></span> <span class="token attr-name">polarity</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span><span class="token punctuation">"</span></span> <span class="token attr-name">from</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>82<span class="token punctuation">"</span></span> <span class="token attr-name">to</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>87<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>aspectTerms</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<p>Le fichier <code>Restaurants_Test_NoLabels.xml</code> sont à utiliser pour tester votre algorithme.</p>
+<p>Les annotations produites par votre algorithme sont a comparer avec celles contenues dans le fichier <code>Restaurants_Test_Gold.xml</code>.</p>
+<p>Par exemple :</p>
+<pre class=" language-xml"><code class="prism  language-xml"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>text</span><span class="token punctuation">&gt;</span></span>All the appetizers and salads were fabulous, the steak was mouth watering and the pasta was delicious!!!<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>text</span><span class="token punctuation">&gt;</span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectTerms</span><span class="token punctuation">&gt;</span></span>
+	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectTerm</span> <span class="token attr-name">term</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>appetizers<span class="token punctuation">"</span></span> <span class="token attr-name">polarity</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>positive<span class="token punctuation">"</span></span> <span class="token attr-name">from</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>8<span class="token punctuation">"</span></span> <span class="token attr-name">to</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>18<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
+	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectTerm</span> <span class="token attr-name">term</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>salads<span class="token punctuation">"</span></span> <span class="token attr-name">polarity</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>positive<span class="token punctuation">"</span></span> <span class="token attr-name">from</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>23<span class="token punctuation">"</span></span> <span class="token attr-name">to</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>29<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
+	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectTerm</span> <span class="token attr-name">term</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>steak<span class="token punctuation">"</span></span> <span class="token attr-name">polarity</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>positive<span class="token punctuation">"</span></span> <span class="token attr-name">from</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>49<span class="token punctuation">"</span></span> <span class="token attr-name">to</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>54<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
+	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aspectTerm</span> <span class="token attr-name">term</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>pasta<span class="token punctuation">"</span></span> <span class="token attr-name">polarity</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>positive<span class="token punctuation">"</span></span> <span class="token attr-name">from</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>82<span class="token punctuation">"</span></span> <span class="token attr-name">to</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>87<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>aspectTerms</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<p>Pour implementer votre algorithme d’analyse de sentiment basée sur les aspects vous pouvez prendre en compte les elements suivants :</p>
+<ol start="2">
+<li>
+<p>Le but de votre algorithme n’est pas de classifier le sentiment de la phrase (par exemple “All the appetizers and salads were fabulous, the steak was mouth watering and the pasta was delicious!!!”), mais de determiner le sentiment relatif aux aspects identifiés dans la phrase (par exemple, “appetizers”, “salads”, “steak”). Une stratégie possible consiste à chercher dans la phrase l’aspect donné en entrée et prendre en compte les mots qui entourent cet aspect (dans une fenêtre t-n et t+n ou t est la position du mot relatif à l’aspect sur lequel on se focalise). Il y a différents façons de choisir n, par exemple d’une façon empirique (en se basant sur les données du gold standard) ou en se basant sur le résultat d’une parsification de la phrase.</p>
+</li>
+<li>
+<p>Determiner la polarité des termes en utilisant le lexique, comme demandé dans l’objectif 1.</p>
+</li>
+<li>
+<p>Deux solutions sont possibles pour calculer le sentiment des aspects en entrée :</p>
+<ul>
+<li><strong>Approche a règles</strong> : un stratège de base (baseline) consiste à sommer les polaritès des mots dans la phrases en utilisant les resources lexicales dédiées a  cette tache (voir point 3) et normaliser cette somme. Un approche a règles vise a améliorer cette stratégie de base avec des règles qui sont déterminées explicitement pour les revues contenues dans les deux jeux de données.</li>
+<li><strong>Apprentissage automatique</strong> : vous pouvez utiliser ces resources lexicales avec les elements relevant de la structure syntaxique de la phrase (negation, tokenisation) comme features pour classifier les termes avec leur polarité : positive, negative, neutral.  Vous pouvez utiliser la suite scikit-learn (<a href="https://scikit-learn.org/stable/index.html">https://scikit-learn.org/stable/index.html</a>) pour effecter cette tache de classification.</li>
+</ul>
+</li>
+<li>
+<p>Evaluation de vos résultats (comme pour le TD de QA) :<br>
+<img src="https://wikimedia.org/api/rest_v1/media/math/render/svg/933a0213d5b652e99a6d1ee8991e1f321f61d9c3" alt="{\displaystyle {\text{précision}}_{i}={\frac {{\text{nb de documents correctement attribués à la classe }}i}{{\text{nb de documents attribués à la classe }}i}}}"><br>
+<img src="https://wikimedia.org/api/rest_v1/media/math/render/svg/040789fe7b6b62f8a78f64851dc89866952b14ee" alt="{\displaystyle {\text{rappel}}_{i}={\frac {{\text{nb de documents correctement attribués à la classe }}i}{{\text{nb de documents appartenant à la classe }}i}}}"><br>
+<img src="https://wikimedia.org/api/rest_v1/media/math/render/svg/28d3440dc517e70d928c3094e651be6bd3ef723d" alt="{\displaystyle F=2\cdot {\frac {({\text{précision}}\cdot {\text{rappel}})}{({\text{précision}}+{\text{rappel}})}}}"></p>
+</li>
+</ol>
+<p>Pour avoir une idée des résultats entendus, voici les résultats des systèmes courants pour cette tache  :</p>
+<pre><code>Nom du système	Accuracy
+NRC-Can.		82.92
+XRCE 			78.14
+UNITOR 			76.29
+</code></pre>
+<p>ou<br>
+<span class="katex--display"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>A</mi><mi>c</mi><mi>c</mi><mi>u</mi><mi>r</mi><mi>a</mi><mi>c</mi><mi>y</mi><mo>=</mo><mfrac><mrow><mi>T</mi><mi>P</mi><mo>+</mo><mi>T</mi><mi>N</mi></mrow><mrow><mi>T</mi><mi>P</mi><mo>+</mo><mi>T</mi><mi>N</mi><mo>+</mo><mi>F</mi><mi>P</mi><mo>+</mo><mi>F</mi><mi>N</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">
+Accuracy= \dfrac{TP+TN}{TP+TN+FP+FN}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.87777em; vertical-align: -0.19444em;"></span><span class="mord mathnormal">A</span><span class="mord mathnormal">cc</span><span class="mord mathnormal">u</span><span style="margin-right: 0.02778em;" class="mord mathnormal">r</span><span class="mord mathnormal">a</span><span style="margin-right: 0.03588em;" class="mord mathnormal">cy</span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 2.12966em; vertical-align: -0.76933em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 1.36033em;"><span class="" style="top: -2.314em;"><span class="pstrut" style="height: 3em;"></span><span class="mord"><span style="margin-right: 0.13889em;" class="mord mathnormal">TP</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right: 0.222222em;"></span><span style="margin-right: 0.10903em;" class="mord mathnormal">TN</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right: 0.222222em;"></span><span style="margin-right: 0.13889em;" class="mord mathnormal">FP</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right: 0.222222em;"></span><span style="margin-right: 0.10903em;" class="mord mathnormal">FN</span></span></span><span class="" style="top: -3.23em;"><span class="pstrut" style="height: 3em;"></span><span class="frac-line" style="border-bottom-width: 0.04em;"></span></span><span class="" style="top: -3.677em;"><span class="pstrut" style="height: 3em;"></span><span class="mord"><span style="margin-right: 0.13889em;" class="mord mathnormal">TP</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right: 0.222222em;"></span><span style="margin-right: 0.10903em;" class="mord mathnormal">TN</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.76933em;"><span class=""></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></span></p>
+<p>Nous n’attendons pas que vous arrivez a faire mieux, mais ces informations sont utiles pour vous comparer et savoir combien les résultats obtenus sont loin de l’état de l’art.</p>
+</div>
+</body>
+
+</html>
